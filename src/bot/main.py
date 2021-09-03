@@ -25,11 +25,13 @@ try:
         host=dotenv_values().get("HOST"),
         database=dotenv_values().get("DB")
     )
+    print("Connected to database")
 except mariadb.Error as e:
-    print(f"Error: {e}")
-
+    print(f"Database error: {e}")
+    exit()
 
 # COMMAND HANDLERS
+
 
 @lesd.message_handler(commands=['start'])  # Start
 def start(message):
@@ -46,4 +48,14 @@ def new(message):
     lesdMessages.addNewBooth(message, connection)
 
 
-lesd.polling()
+# Message Not Recogniced
+@lesd.message_handler(func=lambda message: True, content_types=['text'])
+def undefinedMessage(message):
+    lesdMessages.messageNotRecogniced(message)
+
+
+try:
+    lesd.polling()
+except Exception as e:
+    print(f'Bot error: {e}')
+    exit()
