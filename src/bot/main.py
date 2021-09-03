@@ -54,6 +54,11 @@ def undefinedMessage(message):
     lesdMessages.messageNotRecogniced(message)
 
 
+@lesd.message_handler(commands=['book'])
+def book(message):
+    lesdMessages.bookMessage(message)
+
+
 try:
     lesd.polling()
 except Exception as e:
