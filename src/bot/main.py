@@ -1,32 +1,31 @@
 
 from os import system
 
-import mariadb
-import telebot
 from dotenv import load_dotenv
 from dotenv.main import dotenv_values
+from mariadb import Error, connect, connection
+from telebot import TeleBot
 
-import databaseManager
 import messages
 
 load_dotenv()
 
 # Connection to telegram
-lesd = telebot.TeleBot(dotenv_values().get("TOKEN"))
+lesd = TeleBot(dotenv_values().get("TOKEN"))
 
 # Message handler
 lesdMessages = messages.Messages(lesd)
 
 # DB connection
 try:
-    connection = mariadb.connect(
+    connection = connect(
         user=dotenv_values().get("DB_USER"),
         password=dotenv_values().get("DB_PSSW"),
         host=dotenv_values().get("HOST"),
         database=dotenv_values().get("DB")
     )
     print("Connected to database")
-except mariadb.Error as e:
+except Error as e:
     print(f"Database error: {e}")
     exit()
 
@@ -54,9 +53,17 @@ def undefinedMessage(message):
     lesdMessages.messageNotRecogniced(message)
 
 
-@lesd.message_handler(commands=['book'])
+@lesd.message_handler(commands=['book'])  # Book
 def book(message):
     lesdMessages.bookMessage(message)
+
+
+@lesd.callback_query_handler(func=lambda call=True)
+def query_handler(call):
+    if("next_" in call.data):
+        # next command
+    elif("book_" in call.data):
+        # book command
 
 
 try:

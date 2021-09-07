@@ -1,14 +1,13 @@
 import string
-from os import error
 
-import mariadb
+from mariadb import Error, connection
 
 
 class DatabaseManager:
     """Database manager for the bot
     """
 
-    def __init__(self, connection: mariadb.connection) -> None:
+    def __init__(self, connection: connection) -> None:
         """Constructor
 
         Args:
@@ -67,7 +66,7 @@ class DatabaseManager:
                     "Insert into Booths (booth) value (?)", (booth,))  # Add booth
                 self.connection.commit()  # Commit changes to database
                 return 0
-            except mariadb.Error as e:
+            except Error as e:
                 print(f"[DB ERROR]: {e}")
                 return 2
         else:
@@ -92,7 +91,7 @@ class DatabaseManager:
                     'INSERT INTO bookings (booth, userId, shift) Value (?,?,?)', (booth, user, lastNum + 1))
                 self.connection.commit()
                 return 0
-            except mariadb.Error as e:
+            except Error as e:
                 print(f"[DB ERROR]: {e}")
                 return 2
         else:
