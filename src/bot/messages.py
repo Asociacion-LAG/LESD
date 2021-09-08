@@ -1,5 +1,8 @@
-import mariadb
-import telebot
+import string
+
+from mariadb import connection
+from telebot import TeleBot, types
+from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from databaseManager import DatabaseManager
 
@@ -27,7 +30,7 @@ class Messages:
         'unkown_message':
         u'No puedo entender lo que dices, {name}, si necesitas ayuda puedes probar con /help.',
 
-        'boot_0':
+        'booth_0':
         u'El puesto {booth} ha sido añadido correctamente.',
 
         'booth_1':
@@ -38,9 +41,33 @@ class Messages:
 
         'booth_exception':
         u'No se ha encontrado el nombre del puesto en el mensaje, por favor mira la ayuda para ver como utilizar este comando.',
+
+        'book_message':
+        u'¿Que puesto quieres reservar?',
+
+        'reserva_bien':
+        u'Reserva confirmada para {booth}, cuando sea tu turno se te avisará',
+
+        'reserva_mal':
+        u'La reserva no se pudo completar',
+
+        'cancel_message':
+        u'¿En qué puesto deseas cancelar tu ultima reserva?',
+
+        'cancel_correct':
+        u'Reserva cancelada con éxito',
+
+        'cancel_fail':
+        u'La reserva no pudo ser cancelada',
+
+        'next_message':
+        u'¿En qué puesto quieres pasar el turno?',
+
+        'nuevo_turno':
+        u'Es tu turno para el puesto {booth}'
     }
 
-    def __init__(self, lesd: telebot.TeleBot) -> None:
+    def __init__(self, lesd: TeleBot) -> None:
         """Constructor
 
         Arguments:
@@ -48,17 +75,16 @@ class Messages:
         """
         self.lesd = lesd
 
-    def sendStartMessage(self, message: telebot.types.Message) -> None:
+    def sendStartMessage(self, message: types.Message) -> None:
         """Function to send the start message basic information of the bot
 
         Arguments:
             message (telebot.types.Message): command message
         """
-
         self.lesd.send_message(message.chat.id, self.messages['start'].format(
             name=message.chat.first_name))
 
-    def sendHelpMessage(self, message: telebot.types.Message) -> None:
+    def sendHelpMessage(self, message: types.Message) -> None:
         """Function to send the help message containing explications of the bot commands
 
         Arguments:
@@ -66,7 +92,7 @@ class Messages:
         """
         self.lesd.send_message(message.chat.id, self.messages["help"])
 
-    def addNewBooth(self, message: telebot.types.Message, connection: mariadb.connection) -> None:
+    def addNewBooth(self, message: types.Message, connection: connection) -> None:
         """Function to add new booths to the database
 
         Arguments:
@@ -80,17 +106,19 @@ class Messages:
                 self.lesd.send_message(
                     message.chat.id, self.messages['booth_exception'])
             else:
-
-                self.lesd.send_message(message.chat.id, {
-                    0: self.messages['boot_0'.format(booth=splitMessage[1])],
-                    1: self.messages['boot_1'.format(booth=splitMessage[1])],
-                    2: self.messages['booth_2'],
-                }[dbm.addBooth(splitMessage[1].upper())])
+                booth = splitMessage[1]
+                result = dbm.addBooth(booth.upper())
+                if(result == 2):
+                    self.lesd.send_message(
+                        message.chat.id, self.messages['booth_2'])
+                else:
+                    self.lesd.send_message(
+                        message.chat.id, self.messages['booth_0'.format(booth)])
         else:
             self.lesd.send_message(
                 message.chat.id, self.messages['no_privilege'])
 
-    def messageNotRecogniced(self, message: telebot.types.Message) -> None:
+    def messageNotRecogniced(self, message: types.Message) -> None:
         """Message sent when a message is not recogniced
 
         Args:
@@ -98,3 +126,112 @@ class Messages:
         """
         self.lesd.send_message(
             message.chat.id, self.messages['unkown_message'].format(name=message.chat.first_name))
+
+    def bookMessage(self, message: types.Message, conn:  connection) -> None:
+        """Booking message to display the buttons for each booth
+
+        Args:
+            message (types.Message): message sent to the bot
+            conn (connection): connection to the database
+        """
+        buttons = InlineKeyboardMarkup()
+        buttons.row_width = 1
+
+        dbm = DatabaseManager(conn)
+        booths = dbm.getBooths()
+
+        for booth in booths:
+            (name, ) = booth
+            buttons.add(InlineKeyboardButton(
+                name, callback_data=f"book_{name}"))
+
+        self.lesd.send_message(
+            message.chat.id, self.messages['book_message'], reply_markup=buttons)
+
+    def booking(self, booth: string, message: types.Message, connection: connection) -> None:
+        """Booking method to add a new book to the database
+
+        Args:
+            booth (string): name of the booth
+            message (types.Message): message sent from the bot
+            connection (connection): connection to the database
+        """
+        dbm = DatabaseManager(connection)
+        result = dbm.addBook(message.chat.id, booth)
+        if(result == 0):
+            self.lesd.send_message(
+                message.chat.id, self.messages['reserva_bien'].format(booth=booth))
+        else:
+            self.lesd.send_message(
+                message.chat.id, self.messages['reserva_mal'])
+
+        self.lesd.delete_message(
+            message_id=message.message_id, chat_id=message.chat.id)
+
+    def cancel(self, booth: string, message: types.Message, connection: connection) -> None:
+        """[summary]
+
+        Args:
+            booth (string): [booth name]
+            message (types.Message): [message sent by the bot]
+            connection (connection): [connection to the database]
+        """
+        dbm = DatabaseManager(connection)
+        if(dbm.cancelLast(message.chat.id, booth)):
+            self.lesd.send_message(
+                message.chat.id, self.messages['cancel_correct'])
+        else:
+            self.lesd.send_message(
+                message.chat.id, self.messages['cancel_fail'])
+        self.lesd.delete_message(
+            message_id=message.message_id, chat_id=message.chat.id)
+
+    def cancelMessage(self, message: types.Message, conn: connection) -> None:
+        """Cancel message to display the buttons for each booth
+
+        Args:
+            message (types.Message): message sent to the bot
+            conn (connection): connection to the database
+        """
+        buttons = InlineKeyboardMarkup()
+        buttons.row_width = 1
+
+        dbm = DatabaseManager(conn)
+        booths = dbm.getBooths()
+
+        for booth in booths:
+            (name, ) = booth
+            buttons.add(InlineKeyboardButton(
+                name, callback_data=f"cancel_{name}"))
+
+        self.lesd.send_message(
+            message.chat.id, self.messages['cancel_message'], reply_markup=buttons)
+
+    def nextMessage(self, message: types.Message, conn: connection) -> None:
+        """Next message to display the buttons for each booth
+
+        Args:
+            message (types.Message): message sent to the bot
+            conn (connection): connection to the database
+        """
+        buttons = InlineKeyboardMarkup()
+        buttons.row_width = 1
+
+        dbm = DatabaseManager(conn)
+        booths = dbm.getBooths()
+
+        for booth in booths:
+            (name, ) = booth
+            buttons.add(InlineKeyboardButton(
+                name, callback_data=f"next_{name}"))
+
+        self.lesd.send_message(
+            message.chat.id, self.messages['next_message'], reply_markup=buttons)
+
+    def next(self, booth: string, message: types.Message, connection: connection) -> None:
+
+        dbm = DatabaseManager(connection)
+        nextUserID = dbm.callNext(booth)
+        if(nextUserID != 0):
+            self.lesd.send_message(
+                nextUserID, self.messages['nuevo_turno'].format(booth=booth))

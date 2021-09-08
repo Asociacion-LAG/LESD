@@ -46,7 +46,7 @@ class DatabaseManager:
         self.cursor.execute(
             "Select count(*) from Booths where booth =?", (booth,))
         (result,) = self.cursor.fetchone()  # Number stored in cursor
-        if(result == 0):
+        if(result == 1):
             return True
         else:
             return False
@@ -60,7 +60,7 @@ class DatabaseManager:
         Returns:
             int: 0 if the query executed correctly, 1 if the booth was already on the database and 2 if there was an SQL error
         """
-        if(self.checkIfBoothIsValid(booth)):
+        if(self.checkIfBoothIsValid(booth) == False):
             try:
                 self.cursor.execute(
                     "Insert into Booths (booth) value (?)", (booth,))  # Add booth
@@ -85,10 +85,10 @@ class DatabaseManager:
         if(self.checkIfBoothIsValid(booth)):
             try:
                 self.cursor.execute(
-                    'SELECT COUNT(*) FROM bookings where booth=?', (booth))
+                    'SELECT COUNT(*) FROM bookings where booth=?', (booth,))
                 (lastNum,) = self.cursor.fetchone()
                 self.cursor.execute(
-                    'INSERT INTO bookings (booth, userId, shift) Value (?,?,?)', (booth, user, lastNum + 1))
+                    'INSERT INTO bookings (booth, userId, shift, bookTime) Value (?,?,?, CURRENT_TIME)', (booth, user, lastNum + 1, ))
                 self.connection.commit()
                 return 0
             except Error as e:
@@ -96,3 +96,40 @@ class DatabaseManager:
                 return 2
         else:
             return 1
+
+    def getBooths(self):
+        """Returns all Booths in the database
+        """
+        self.cursor.execute('SELECT Booth from Booths')
+        return self.cursor.fetchall()
+
+    def cancelLast(self, id: string, booth: string) -> bool:
+        try:
+            self.cursor.execute(
+                'Select `shift` from bookings where userID=? AND booth=? order by shift desc', (id, booth, ))
+            (shift,) = self.cursor.fetchone()
+
+            self.cursor.execute(
+                'Update bookings set canceled=1 where userID=? and booth=? and shift=?', (id, booth, shift, ))
+
+            self.connection.commit()
+            return True
+        except Exception as e:
+            return False
+
+    def callNext(self, booth: string) -> int:
+        try:
+            self.cursor.execute(
+                'UPDATE booths set currentShift = currentShift + 1 where booth=?', (booth,))
+            self.cursor.execute(
+                'Select currentShift from booths where booth=?', (booth,))
+            (currentShift, ) = self.cursor.fetchone()
+
+            self.cursor.execute(
+                'SELECT userID from bookings where booth=? and shift=?', (booth, currentShift, ))
+
+            (userID, ) = self.cursor.fetchone()
+
+            return userID
+        except Exception:
+            return 0

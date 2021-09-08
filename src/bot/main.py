@@ -4,7 +4,7 @@ from os import system
 from dotenv import load_dotenv
 from dotenv.main import dotenv_values
 from mariadb import Error, connect, connection
-from telebot import TeleBot
+from telebot import TeleBot, types
 
 import messages
 
@@ -32,19 +32,40 @@ except Error as e:
 # COMMAND HANDLERS
 
 
-@lesd.message_handler(commands=['start'])  # Start
+# Start
+@lesd.message_handler(commands=['start'])
 def start(message):
     lesdMessages.sendStartMessage(message)
 
 
-@lesd.message_handler(commands=['help'])  # Help
+# Help
+@lesd.message_handler(commands=['help'])
 def help(message):
     lesdMessages.sendHelpMessage(message)
 
 
-@lesd.message_handler(commands=['new'])  # New
+# New
+@lesd.message_handler(commands=['new'])
 def new(message):
     lesdMessages.addNewBooth(message, connection)
+
+
+# Book
+@lesd.message_handler(commands=['book'])
+def book(message):
+    lesdMessages.bookMessage(message, connection)
+
+
+# Cancel
+@lesd.message_handler(commands=['cancel'])
+def cancel(message):
+    lesdMessages.cancelMessage(message, connection)
+
+
+# Next
+@lesd.message_handler(commands=['next'])
+def next(message):
+    lesdMessages.nextMessage(message, connection)
 
 
 # Message Not Recogniced
@@ -53,17 +74,17 @@ def undefinedMessage(message):
     lesdMessages.messageNotRecogniced(message)
 
 
-@lesd.message_handler(commands=['book'])  # Book
-def book(message):
-    lesdMessages.bookMessage(message)
-
-
-@lesd.callback_query_handler(func=lambda call=True)
-def query_handler(call):
-    if("next_" in call.data):
-        # next command
-    elif("book_" in call.data):
-        # book command
+@lesd.callback_query_handler(func=lambda call: True)  # Button Handler
+def query_handler(call: types.CallbackQuery):
+    if("book_" in call.data):
+        booth = call.data.replace('book_', '')
+        lesdMessages.booking(booth, call.message, connection)
+    elif('cancel_' in call.data):
+        booth = call.data.replace('cancel_', '')
+        lesdMessages.cancel(booth, call.message, connection)
+    elif('next_' in call.data):
+        booth = call.data.replace('next_', '')
+        lesdMessages.next(booth, call.message, connection)
 
 
 try:
