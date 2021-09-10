@@ -68,6 +68,12 @@ def next(message):
     lesdMessages.nextMessage(message, connection)
 
 
+# Data
+@lesd.message_handler(commands=['dataStored'])
+def dataStored(message):
+    lesdMessages.dataMessage(message)
+
+
 # Message Not Recogniced
 @lesd.message_handler(func=lambda message: True, content_types=['text'])
 def undefinedMessage(message):

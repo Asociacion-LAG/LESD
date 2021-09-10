@@ -22,7 +22,8 @@ class Messages:
         u'Mis comandos son:\n'
         u'    /new: añade a la base de datos un nuevo puesto empezando por el turno 0.\n'
         u'    /book: añade tu id a la base de datos junto al numero de tu turno. Cuando llegue tu turno se te avisará por este mismo chat.\n'
-        u'    /next < nombre del puesto >: pasa al siguiente turno en un puesto.',
+        u'    /next < nombre del puesto >: pasa al siguiente turno en un puesto.'
+        u'    /data: manda un mensaje sobre los datos guardados en la base de datos.',
 
         'no_privilege':
         u'No tienes privilegios para ejecutar esta opción.\n',
@@ -64,7 +65,11 @@ class Messages:
         u'¿En qué puesto quieres pasar el turno?',
 
         'nuevo_turno':
-        u'Es tu turno para el puesto {booth}'
+        u'Es tu turno para el puesto {booth}',
+
+        'data_stored':
+        u'En la base de datos guardo el id de nuestro chat, del cual no se puede sacar ni tu teléfono ni tus datos ya que es un id privado entre tu y yo.'
+        u'También guardamos la hora a la que reservas y la hora a la que te llamamos por motivos de estadística'
     }
 
     def __init__(self, lesd: TeleBot) -> None:
@@ -243,3 +248,11 @@ class Messages:
                 nextUserID, self.messages['nuevo_turno'].format(booth=booth))
             self.lesd.delete_message(
                 message_id=message.message_id, chat_id=message.chat.id)
+
+    def dataMessage(self, message: types.Message):
+        """Message sent explained the stored data
+
+        Args:
+            message (types.Message): message sent to the bot
+        """
+        self.lesd.send_message(message.chat.id, self.messages['data_stored'])
