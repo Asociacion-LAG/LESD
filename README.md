@@ -24,7 +24,7 @@ pip install mariaDB
 
 Este bot utiliza MariaDB como su base de datos, así que para ello tendremos que instalar un servidor de MariaDB en el algún equipo, bien en el mismo que ejecute el bot o bien en otro que permita acceso al bot
 
-Para que el boy funcione se necesita una base de datos con unas tablas concretas, para ver la estructura de la base de datos referir a los archivos de [database](./src/database).
+Para que el boy funcione se necesita una base de datos con unas tablas concretas, para ver la estructura de la base de datos referir a los archivos de [database](./src/db).
 
 Para crear a los administradores se ejecutará el siguiente comando:
 
