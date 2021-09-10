@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS `bookings` (
   `userID` varchar(100) NOT NULL,
   `shift` int(11) NOT NULL,
   `canceled` tinyint(1) DEFAULT 0,
+  `bookTime` time DEFAULT '00:00:00',
+  `enterTime` time DEFAULT '00:00:00',
   UNIQUE KEY `bookings_pk` (`Booth`,`userID`,`shift`),
   CONSTRAINT `bookings_Booths_booth_fk` FOREIGN KEY (`Booth`) REFERENCES `booths` (`booth`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='list of all the bookings in the event';
