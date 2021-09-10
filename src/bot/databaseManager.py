@@ -1,4 +1,5 @@
 import string
+from typing import Tuple
 
 from mariadb import Error, connection
 
@@ -72,15 +73,15 @@ class DatabaseManager:
         else:
             return 1
 
-    def addBook(self, user: string, booth: string) -> int:
+    def addBook(self, user: string, booth: string) -> Tuple[int, int, int]:
         """Adds a booking to the database
 
         Args:
-            user (string): user chat ID
-            booth (string): name of the booth
+            user(string): user chat ID
+            booth(string): name of the booth
 
         Returns:
-            int: 0 if everything went OK, 1 if the booth was not in de database, 2 if an error ocurred
+            Tuple[int, int, int]: first one is a code error, second one user turn, last one current turn
         """
         if(self.checkIfBoothIsValid(booth)):
             try:
@@ -90,7 +91,10 @@ class DatabaseManager:
                 self.cursor.execute(
                     'INSERT INTO bookings (booth, userId, shift, bookTime) Value (?,?,?, CURRENT_TIME)', (booth, user, lastNum + 1, ))
                 self.connection.commit()
-                return 0
+                self.cursor.execute(
+                    'Select currentShift from booths where booth=?', (booth,))
+                (currentShift,) = self.cursor.fetchone()
+                return (0, lastNum + 1, currentShift)
             except Error as e:
                 print(f"[DB ERROR]: {e}")
                 return 2

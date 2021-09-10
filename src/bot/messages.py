@@ -47,7 +47,8 @@ class Messages:
         u'¿Que puesto quieres reservar?',
 
         'reserva_bien':
-        u'Reserva confirmada para {booth}, cuando sea tu turno se te avisará',
+        u'Reserva confirmada para {booth}, cuando sea tu turno se te avisará.\n'
+        u'Tu turno es el {turnoUser}, el turno actual es {currentTurn}',
 
         'reserva_mal':
         u'La reserva no se pudo completar',
@@ -162,10 +163,10 @@ class Messages:
             connection (connection): connection to the database
         """
         dbm = DatabaseManager(connection)
-        result = dbm.addBook(message.chat.id, booth)
+        (result, userTurn, currentTurn) = dbm.addBook(message.chat.id, booth)
         if(result == 0):
             self.lesd.send_message(
-                message.chat.id, self.messages['reserva_bien'].format(booth=booth))
+                message.chat.id, self.messages['reserva_bien'].format(booth=booth, currentTurn=currentTurn, turnoUser=userTurn))
         else:
             self.lesd.send_message(
                 message.chat.id, self.messages['reserva_mal'])
