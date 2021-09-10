@@ -130,6 +130,11 @@ class DatabaseManager:
 
             (userID, ) = self.cursor.fetchone()
 
+            self.cursor.execute(
+                'Update bookings set enterTime = CURRENT_TIME where booth=? and userID=?', (booth, userID, ))
+
+            self.connection.commit()
             return userID
-        except Exception:
+        except Exception as e:
+            print(f"DB Error: {e}")
             return 0

@@ -229,9 +229,17 @@ class Messages:
             message.chat.id, self.messages['next_message'], reply_markup=buttons)
 
     def next(self, booth: string, message: types.Message, connection: connection) -> None:
+        """Sends a warning message for the next person in a booth
 
+        Args:
+            booth (string): name of the booth
+            message (types.Message): message with the buttons
+            connection (connection): connection to the database
+        """
         dbm = DatabaseManager(connection)
         nextUserID = dbm.callNext(booth)
         if(nextUserID != 0):
             self.lesd.send_message(
                 nextUserID, self.messages['nuevo_turno'].format(booth=booth))
+            self.lesd.delete_message(
+                message_id=message.message_id, chat_id=message.chat.id)
