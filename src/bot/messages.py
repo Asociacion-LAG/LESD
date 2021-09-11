@@ -22,8 +22,8 @@ class Messages:
         u'Mis comandos son:\n'
         u'    /new: añade a la base de datos un nuevo puesto empezando por el turno 0.\n'
         u'    /book: añade tu id a la base de datos junto al numero de tu turno. Cuando llegue tu turno se te avisará por este mismo chat.\n'
-        u'    /next < nombre del puesto >: pasa al siguiente turno en un puesto.'
-        u'    /data: manda un mensaje sobre los datos guardados en la base de datos.',
+        u'    /next < nombre del puesto >: pasa al siguiente turno en un puesto.\n'
+        u'    /data: manda un mensaje sobre los datos guardados en la base de datos.\n',
 
         'no_privilege':
         u'No tienes privilegios para ejecutar esta opción.\n',
@@ -69,7 +69,7 @@ class Messages:
         u'Es tu turno para el puesto {booth}',
 
         'data_stored':
-        u'En la base de datos guardo el id de nuestro chat, del cual no se puede sacar ni tu teléfono ni tus datos ya que es un id privado entre tu y yo.'
+        u'En la base de datos guardo el id de nuestro chat, del cual no se puede sacar ni tu teléfono ni tus datos ya que es un id privado entre tu y yo.\n'
         u'También guardamos la hora a la que reservas y la hora a la que te llamamos por motivos de estadística'
     }
 
@@ -119,7 +119,7 @@ class Messages:
                         message.chat.id, self.messages['booth_2'])
                 else:
                     self.lesd.send_message(
-                        message.chat.id, self.messages['booth_0'.format(booth)])
+                        message.chat.id, self.messages[f'booth_{result}'].format(booth=booth))
         else:
             self.lesd.send_message(
                 message.chat.id, self.messages['no_privilege'])
