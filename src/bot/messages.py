@@ -22,8 +22,9 @@ class Messages:
         u'Mis comandos son:\n'
         u'    /new: añade a la base de datos un nuevo puesto empezando por el turno 0.\n'
         u'    /book: añade tu id a la base de datos junto al numero de tu turno. Cuando llegue tu turno se te avisará por este mismo chat.\n'
-        u'    /next < nombre del puesto >: pasa al siguiente turno en un puesto.\n'
-        u'    /data: manda un mensaje sobre los datos guardados en la base de datos.\n',
+        u'    /next: pasa al siguiente turno en un puesto.\n'
+        u'    /data: manda un mensaje sobre los datos guardados en la base de datos.\n'
+        u'    /cancel: cancela tu última cita en un puesto.\n',
 
         'no_privilege':
         u'No tienes privilegios para ejecutar esta opción.\n',

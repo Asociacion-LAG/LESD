@@ -130,15 +130,18 @@ class DatabaseManager:
             (currentShift, ) = self.cursor.fetchone()
 
             self.cursor.execute(
-                'SELECT userID from bookings where booth=? and shift=?', (booth, currentShift, ))
+                'SELECT userID, canceled from bookings where booth=? and shift=?', (booth, currentShift, ))
 
-            (userID, ) = self.cursor.fetchone()
+            (userID, canceled, ) = self.cursor.fetchone()
 
             self.cursor.execute(
                 'Update bookings set enterTime = CURRENT_TIME where booth=? and userID=?', (booth, userID, ))
 
             self.connection.commit()
-            return userID
+            if(canceled == 1):
+                return self.callNext(booth)
+            else:
+                return userID
         except Exception as e:
             print(f"DB Error: {e}")
             return 0
