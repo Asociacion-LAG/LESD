@@ -20,6 +20,10 @@ pip install pyTelegramBotAPI
 pip install mariaDB
 ```
 
+```bash
+pip install python-dotenv
+```
+
 ### Base de datos
 
 Este bot utiliza MariaDB como su base de datos, así que para ello tendremos que instalar un servidor de MariaDB en el algún equipo, bien en el mismo que ejecute el bot o bien en otro que permita acceso al bot
