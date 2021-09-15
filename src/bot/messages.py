@@ -225,15 +225,19 @@ class Messages:
         buttons.row_width = 1
 
         dbm = DatabaseManager(conn)
-        booths = dbm.getBooths()
+        if(dbm.checkAdmin(message.chat.username)):
+            booths = dbm.getBooths()
 
-        for booth in booths:
-            (name, ) = booth
-            buttons.add(InlineKeyboardButton(
-                name, callback_data=f"next_{name}"))
+            for booth in booths:
+                (name, ) = booth
+                buttons.add(InlineKeyboardButton(
+                    name, callback_data=f"next_{name}"))
 
-        self.lesd.send_message(
-            message.chat.id, self.messages['next_message'], reply_markup=buttons)
+            self.lesd.send_message(
+                message.chat.id, self.messages['next_message'], reply_markup=buttons)
+        else:
+            self.lesd.send_message(
+                message.chat.id, self.messages['no_privilege'])
 
     def next(self, booth: string, message: types.Message, connection: connection) -> None:
         """Sends a warning message for the next person in a booth
