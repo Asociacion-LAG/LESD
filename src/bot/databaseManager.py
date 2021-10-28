@@ -123,25 +123,37 @@ class DatabaseManager:
 
     def callNext(self, booth: string) -> int:
         try:
+            # Get current shift
             self.cursor.execute(
-                'UPDATE booths set currentShift = currentShift + 1 where booth=?', (booth,))
+                'SELECT currentShift rom booths where booth=?', (booth, ))
+            (currentShift,) = self.cursor.fetchone()
+
+            # Update current shift
             self.cursor.execute(
-                'Select currentShift from booths where booth=?', (booth,))
-            (currentShift, ) = self.cursor.fetchone()
+                'SELECT COUNT(*) from bookings where booth=? and shift >?', (booth, currentShift))
+            (resul,) = self.cursor.fetchone()
+            if(resul != 0):
+                # Current shift update
+                self.cursor.execute(
+                    'UPDATE booths set currentShift = currentShift + 1 where booth=?', (booth,))
 
-            self.cursor.execute(
-                'SELECT userID, canceled from bookings where booth=? and shift=?', (booth, currentShift, ))
+                self.cursor.execute(
+                    'Select currentShift from booths where booth=?', (booth,))
+                (currentShift, ) = self.cursor.fetchone()
+                # Select next user id
+                self.cursor.execute(
+                    'SELECT userID, canceled from bookings where booth=? and shift=?', (booth, currentShift, ))
 
-            (userID, canceled, ) = self.cursor.fetchone()
+                (userID, canceled, ) = self.cursor.fetchone()
+                # Update time where user is called
+                self.cursor.execute(
+                    'Update bookings set enterTime = CURRENT_TIME where booth=? and userID=?', (booth, userID, ))
 
-            self.cursor.execute(
-                'Update bookings set enterTime = CURRENT_TIME where booth=? and userID=?', (booth, userID, ))
-
-            self.connection.commit()
-            if(canceled == 1):
-                return self.callNext(booth)
-            else:
-                return userID
+                self.connection.commit()
+                if(canceled == 1):
+                    return self.callNext(booth)
+                else:
+                    return userID
         except Exception as e:
             print(f"DB Error: {e}")
             return 0
