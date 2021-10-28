@@ -71,7 +71,9 @@ class Messages:
 
         'data_stored':
         u'En la base de datos guardo el id de nuestro chat, del cual no se puede sacar ni tu teléfono ni tus datos ya que es un id privado entre tu y yo.\n'
-        u'También guardamos la hora a la que reservas y la hora a la que te llamamos por motivos de estadística'
+        u'También guardamos la hora a la que reservas y la hora a la que te llamamos por motivos de estadística',
+        'no_next':
+        u'No hay nadie esperando para el puesto {booth}'
     }
 
     def __init__(self, lesd: TeleBot) -> None:
@@ -250,6 +252,9 @@ class Messages:
         dbm = DatabaseManager(connection)
         nextUserID = dbm.callNext(booth)
         if(nextUserID != 0):
+            if(nextUserID == 1):
+                self.lesd.send_message(
+                    message.message_id, self.messages['no_next'].format(booth=booth))
             self.lesd.send_message(
                 nextUserID, self.messages['nuevo_turno'].format(booth=booth))
             self.lesd.delete_message(

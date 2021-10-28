@@ -154,6 +154,8 @@ class DatabaseManager:
                     return self.callNext(booth)
                 else:
                     return userID
+            else:
+                return 1
         except Exception as e:
             print(f"DB Error: {e}")
             return 0
