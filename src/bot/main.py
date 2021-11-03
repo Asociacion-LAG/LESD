@@ -69,7 +69,7 @@ def next(message):
 
 
 # Data
-@lesd.message_handler(commands=['dataStored'])
+@lesd.message_handler(commands=['data'])
 def dataStored(message):
     lesdMessages.dataMessage(message)
 
