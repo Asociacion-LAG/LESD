@@ -73,8 +73,23 @@ def next(message):
 def dataStored(message):
     lesdMessages.dataMessage(message)
 
+# Enable event
+
+
+@lesd.message_handler(commands=['enable'])
+def enableEvent(message):
+    lesdMessages.enableMessage(message, connection)
+
+# Disable event
+
+
+@lesd.message_handler(commands=['disable'])
+def enableEvent(message):
+    lesdMessages.disableMessage(message, connection)
 
 # Message Not Recogniced
+
+
 @lesd.message_handler(func=lambda message: True, content_types=['text'])
 def undefinedMessage(message):
     lesdMessages.messageNotRecogniced(message)
@@ -84,13 +99,24 @@ def undefinedMessage(message):
 def query_handler(call: types.CallbackQuery):
     if("book_" in call.data):
         booth = call.data.replace('book_', '')
-        lesdMessages.booking(booth, call.message, connection)
+        lesdMessages.booking(
+            booth=booth, message=call.message, connection=connection)
     elif('cancel_' in call.data):
         booth = call.data.replace('cancel_', '')
-        lesdMessages.cancel(booth, call.message, connection)
+        lesdMessages.cancel(
+            booth=booth, message=call.message, connection=connection)
     elif('next_' in call.data):
         booth = call.data.replace('next_', '')
-        lesdMessages.next(booth, call.message, connection)
+        lesdMessages.next(booth=booth, message=call.message,
+                          connection=connection)
+    elif('enable_' in call.data):
+        booth = call.data.replace('enable_', '')
+        lesdMessages.enableEvent(
+            booth=booth, message=call.message, connection=connection)
+    elif('disable_' in call.data):
+        booth = call.data.replace('disable_', '')
+        lesdMessages.disableEvent(
+            booth=booth, message=call.message, connection=connection)
 
 
 try:

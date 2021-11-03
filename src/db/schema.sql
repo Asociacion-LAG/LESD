@@ -47,6 +47,7 @@ DROP TABLE IF EXISTS `booths`;
 CREATE TABLE IF NOT EXISTS `booths` (
   `booth` varchar(50) NOT NULL,
   `currentShift` int(11) DEFAULT 0,
+  `enabled` int(11) DEFAULT 0,
   PRIMARY KEY (`booth`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='List of booths in the event with the actual shift number';
 

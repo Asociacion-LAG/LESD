@@ -101,10 +101,13 @@ class DatabaseManager:
         else:
             return 1
 
-    def getBooths(self):
+    def getBooths(self, enabled: bool = False):
         """Returns all Booths in the database
         """
-        self.cursor.execute('SELECT Booth from Booths')
+        if(enabled):
+            self.cursor.execute('SELECT booth FROM Booths WHERE enabled=1')
+        else:
+            self.cursor.execute('SELECT Booth FROM Booths WHERE enabled=0')
         return self.cursor.fetchall()
 
     def cancelLast(self, id: string, booth: string) -> bool:
@@ -159,3 +162,19 @@ class DatabaseManager:
         except Exception as e:
             print(f"DB Error: {e}")
             return 0, 0
+
+    def enableEvent(self, booth: string):
+        try:
+            self.cursor.execute(
+                'UPDATE booths set enabled = 1 where booth=?', (booth,))
+            self.connection.commit()
+        except Exception as e:
+            print(f"DB Error: {e}")
+
+    def disableEvent(self, booth: string):
+        try:
+            self.cursor.execute(
+                'UPDATE booths set enabled = 0 where booth=?', (booth,))
+            self.connection.commit()
+        except Exception as e:
+            print(f"DB Error: {e}")
