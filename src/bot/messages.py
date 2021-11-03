@@ -69,6 +69,9 @@ class Messages:
         'nuevo_turno':
         u'Es tu turno para el puesto {booth}',
 
+        'next':
+        u'Se ha llamado al turno {shift}',
+
         'data_stored':
         u'En la base de datos guardo el id de nuestro chat, del cual no se puede sacar ni tu teléfono ni tus datos ya que es un id privado entre tu y yo.\n'
         u'También guardamos la hora a la que reservas y la hora a la que te llamamos por motivos de estadística',
@@ -250,13 +253,17 @@ class Messages:
             connection (connection): connection to the database
         """
         dbm = DatabaseManager(connection)
-        nextUserID = dbm.callNext(booth)
+        (nextUserID, shift) = dbm.callNext(booth)
         if(nextUserID != 0):
             if(nextUserID == 1):
                 self.lesd.send_message(
                     message.message_id, self.messages['no_next'].format(booth=booth))
+            # Message to next user
             self.lesd.send_message(
                 nextUserID, self.messages['nuevo_turno'].format(booth=booth))
+            # Message to admin
+            self.lesd.send_message(
+                message.chat.id, self.messages['next'].format(shift=shift))
             self.lesd.delete_message(
                 message_id=message.message_id, chat_id=message.chat.id)
 

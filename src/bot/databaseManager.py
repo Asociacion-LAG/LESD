@@ -121,11 +121,11 @@ class DatabaseManager:
         except Exception as e:
             return False
 
-    def callNext(self, booth: string) -> int:
+    def callNext(self, booth: string) -> Tuple[int, int]:
         try:
             # Get current shift
             self.cursor.execute(
-                'SELECT currentShift rom booths where booth=?', (booth, ))
+                'SELECT currentShift from booths where booth=?', (booth, ))
             (currentShift,) = self.cursor.fetchone()
 
             # Update current shift
@@ -153,9 +153,9 @@ class DatabaseManager:
                 if(canceled == 1):
                     return self.callNext(booth)
                 else:
-                    return userID
+                    return userID, currentShift
             else:
-                return 1
+                return 1, 0
         except Exception as e:
             print(f"DB Error: {e}")
-            return 0
+            return 0, 0
