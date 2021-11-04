@@ -12,7 +12,7 @@ class Messages:
 
     """
 
-    messages = {
+    messages = {  # messages that the bot will send for easy access
         'start':
         u'Hola, {name}!, bienvenido al sistema de turnos de eventos de LAG.\n'
         u'Este bot está diseñado para facilitar el uso de los puestos de nuestros eventos mediante el uso de turnos.\n'
@@ -75,6 +75,7 @@ class Messages:
         'data_stored':
         u'En la base de datos guardo el id de nuestro chat, del cual no se puede sacar ni tu teléfono ni tus datos ya que es un id privado entre tu y yo.\n'
         u'También guardamos la hora a la que reservas y la hora a la que te llamamos por motivos de estadística',
+
         'no_next':
         u'No hay nadie esperando para el puesto {booth}',
 
@@ -132,19 +133,24 @@ class Messages:
         dbm = DatabaseManager(connection)
         if(dbm.checkAdmin(message.from_user.username)):
             splitMessage = message.text.split()
+            # splits the message to get: splitMessage[0] = command & splitMessage[1] = name of the booth
             if(len(splitMessage) != 2):
+                # len must be 2
                 self.lesd.send_message(
                     message.chat.id, self.messages['booth_exception'])
             else:
                 booth = splitMessage[1]
                 result = dbm.addBooth(booth.upper())
                 if(result == 2):
+                    # db error
                     self.lesd.send_message(
                         message.chat.id, self.messages['booth_2'])
                 else:
+                    # result will be 1 if an error ocurred or 0 if not
                     self.lesd.send_message(
                         message.chat.id, self.messages[f'booth_{result}'].format(booth=booth))
         else:
+            # No privilege message
             self.lesd.send_message(
                 message.chat.id, self.messages['no_privilege'])
 
@@ -157,28 +163,33 @@ class Messages:
         self.lesd.send_message(
             message.chat.id, self.messages['unkown_message'].format(name=message.chat.first_name))
 
-    def bookMessage(self, message: types.Message, conn:  connection) -> None:
-        """Booking message to display the buttons for each booth
+    def keyboardGenerator(self, buttonType: string, connection: connection, message: types.Message, enabled: bool = False) -> None:
+        """Keyboard generator for the different commands
 
         Args:
+            buttonType (string): name of the command
+            connection (connection): connection to the database
             message (types.Message): message sent to the bot
-            conn (connection): connection to the database
+            enabled (bool, optional): If the booth has to be enabled or not. Defaults to False.
         """
-        buttons = InlineKeyboardMarkup()
-        buttons.row_width = 1
 
-        dbm = DatabaseManager(conn)
-        booths = dbm.getBooths(enabled=True)
+        buttons = InlineKeyboardMarkup()
+        buttons.row_width = 2
+
+        dbm = DatabaseManager(connection)
+        booths = dbm.getBooths(enabled)  # Gets all enabled booths
         if(len(booths) == 0):
+            # No booths in list
             self.lesd.send_message(message.chat.id, self.messages['no_booths'])
         else:
             for booth in booths:
                 (name, ) = booth
+                # adds the name of the booth to the keyboard
                 buttons.add(InlineKeyboardButton(
-                    name, callback_data=f"book_{name}"))
+                    name, callback_data=buttonType+name))
 
             self.lesd.send_message(
-                message.chat.id, self.messages['book_message'], reply_markup=buttons)
+                message.chat.id, self.messages[buttonType+'message'], reply_markup=buttons)
 
     def booking(self, booth: string, message: types.Message, connection: connection) -> None:
         """Booking method to add a new book to the database
@@ -218,113 +229,6 @@ class Messages:
         self.lesd.delete_message(
             message_id=message.message_id, chat_id=message.chat.id)
 
-    def cancelMessage(self, message: types.Message, conn: connection) -> None:
-        """Cancel message to display the buttons for each booth
-
-        Args:
-            message (types.Message): message sent to the bot
-            conn (connection): connection to the database
-        """
-        buttons = InlineKeyboardMarkup()
-        buttons.row_width = 1
-
-        dbm = DatabaseManager(conn)
-        booths = dbm.getBooths(enabled=True)
-        if (len(booths) == 0):
-            self.lesd.send_message(message.chat.id, self.messages['no_booths'])
-        else:
-            for booth in booths:
-                (name, ) = booth
-                buttons.add(InlineKeyboardButton(
-                    name, callback_data=f"cancel_{name}"))
-
-            self.lesd.send_message(
-                message.chat.id, self.messages['cancel_message'], reply_markup=buttons)
-
-    def nextMessage(self, message: types.Message, conn: connection) -> None:
-        """Next message to display the buttons for each booth
-
-        Args:
-            message (types.Message): message sent to the bot
-            conn (connection): connection to the database
-        """
-        buttons = InlineKeyboardMarkup()
-        buttons.row_width = 1
-
-        dbm = DatabaseManager(conn)
-        if(dbm.checkAdmin(message.chat.username)):
-            booths = dbm.getBooths(enabled=True)
-            if (len(booths) == 0):
-                self.lesd.send_message(
-                    message.chat.id, self.messages['no_booths'])
-            else:
-                for booth in booths:
-                    (name, ) = booth
-                    buttons.add(InlineKeyboardButton(
-                        name, callback_data=f"next_{name}"))
-
-                self.lesd.send_message(
-                    message.chat.id, self.messages['next_message'], reply_markup=buttons)
-        else:
-            self.lesd.send_message(
-                message.chat.id, self.messages['no_privilege'])
-
-    def enableMessage(self, message: types.Message, connection: connection):
-        """Enable message to display the buttons for each booth
-
-        Args:
-            message (types.Message): message sent to the bot
-            conn (connection): connection to the database
-        """
-        buttons = InlineKeyboardMarkup()
-        buttons.row_width = 1
-
-        dbm = DatabaseManager(connection)
-        if(dbm.checkAdmin(message.chat.username)):
-            booths = dbm.getBooths()
-            if(len(booths) == 0):
-                self.lesd.send_message(
-                    message.chat.id, self.messages['all_enabled'])
-            else:
-                for booth in booths:
-                    (name, ) = booth
-                    buttons.add(InlineKeyboardButton(
-                        name, callback_data=f"enable_{name}"))
-
-                self.lesd.send_message(
-                    message.chat.id, self.messages['enable_message'], reply_markup=buttons)
-        else:
-            self.lesd.send_message(
-                message.chat.id, self.messages['no_privilege'])
-
-    def disableMessage(self, message: types.Message, connection: connection):
-        """Disable message to display the buttons for each booth
-
-        Args:
-            message (types.Message): message sent to the bot
-            conn (connection): connection to the database
-        """
-        buttons = InlineKeyboardMarkup()
-        buttons.row_width = 1
-
-        dbm = DatabaseManager(connection)
-        if(dbm.checkAdmin(message.chat.username)):
-            booths = dbm.getBooths(enabled=True)
-            if(len(booths) == 0):
-                self.lesd.send_message(
-                    message.chat.id, self.messages['all_enabled'])
-            else:
-                for booth in booths:
-                    (name, ) = booth
-                    buttons.add(InlineKeyboardButton(
-                        name, callback_data=f"disable_{name}"))
-
-                self.lesd.send_message(
-                    message.chat.id, self.messages['disable_message'], reply_markup=buttons)
-        else:
-            self.lesd.send_message(
-                message.chat.id, self.messages['no_privilege'])
-
     def next(self, booth: string, message: types.Message, connection: connection) -> None:
         """Sends a warning message for the next person in a booth
 
@@ -357,6 +261,13 @@ class Messages:
         self.lesd.send_message(message.chat.id, self.messages['data_stored'])
 
     def enableEvent(self, booth: string, message: types.Message, connection: connection):
+        """Event enabler
+
+        Args:
+            booth (string): name of the booth
+            message (types.Message): message sent to the bot
+            connection (connection): connection to the database
+        """
         dbm = DatabaseManager(connection)
         dbm.enableEvent(booth)
         self.lesd.send_message(
@@ -365,6 +276,13 @@ class Messages:
             message_id=message.message_id, chat_id=message.chat.id)
 
     def disableEvent(self, booth: string, message: types.Message, connection: connection):
+        """Event disabler
+
+        Args:
+            booth (string): name of the booth
+            message (types.Message): message sent to the bot
+            connection (connection): connection to the database
+        """
         dbm = DatabaseManager(connection)
         dbm.disableEvent(booth)
         self.lesd.send_message(

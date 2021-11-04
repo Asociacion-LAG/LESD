@@ -1,5 +1,5 @@
 import string
-from typing import Tuple
+from typing import List, Tuple
 
 from mariadb import Error, connection
 
@@ -101,8 +101,14 @@ class DatabaseManager:
         else:
             return 1
 
-    def getBooths(self, enabled: bool = False):
+    def getBooths(self, enabled: bool = False) -> list:
         """Returns all Booths in the database
+
+        Args:
+            enabled (bool, optional): if the booth has to be enabled or not. Defaults to False.
+
+        Returns:
+            [list]: list with all the booths selected
         """
         if(enabled):
             self.cursor.execute('SELECT booth FROM Booths WHERE enabled=1')
@@ -111,6 +117,15 @@ class DatabaseManager:
         return self.cursor.fetchall()
 
     def cancelLast(self, id: string, booth: string) -> bool:
+        """Cancel last book from a user
+
+        Args:
+            id (string): id between the user and the bot
+            booth (string): name of the booth
+
+        Returns:
+            bool: [description]
+        """
         try:
             self.cursor.execute(
                 'Select `shift` from bookings where userID=? AND booth=? order by shift desc', (id, booth, ))
@@ -125,6 +140,14 @@ class DatabaseManager:
             return False
 
     def callNext(self, booth: string) -> Tuple[int, int]:
+        """Get next user id on the list and the current shift.
+
+        Args:
+            booth (string): name of the booth
+
+        Returns:
+            Tuple[int, int]: (userId, shift of the user)
+        """
         try:
             # Get current shift
             self.cursor.execute(
@@ -163,7 +186,12 @@ class DatabaseManager:
             print(f"DB Error: {e}")
             return 0, 0
 
-    def enableEvent(self, booth: string):
+    def enableEvent(self, booth: string) -> None:
+        """Enable a event in the database
+
+        Args:
+            booth (string): name of the booth
+        """
         try:
             self.cursor.execute(
                 'UPDATE booths set enabled = 1 where booth=?', (booth,))
@@ -171,7 +199,12 @@ class DatabaseManager:
         except Exception as e:
             print(f"DB Error: {e}")
 
-    def disableEvent(self, booth: string):
+    def disableEvent(self, booth: string) -> None:
+        """Disable a event in the database
+
+        Args:
+            booth (string): name of the booth
+        """
         try:
             self.cursor.execute(
                 'UPDATE booths set enabled = 0 where booth=?', (booth,))

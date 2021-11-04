@@ -34,64 +34,69 @@ except Error as e:
 
 # Start
 @lesd.message_handler(commands=['start'])
-def start(message):
+def start(message: types.Message) -> None:
     lesdMessages.sendStartMessage(message)
 
 
 # Help
 @lesd.message_handler(commands=['help'])
-def help(message):
+def help(message: types.Message) -> None:
     lesdMessages.sendHelpMessage(message)
 
 
 # New
 @lesd.message_handler(commands=['new'])
-def new(message):
+def new(message: types.Message) -> None:
     lesdMessages.addNewBooth(message, connection)
 
 
 # Book
 @lesd.message_handler(commands=['book'])
-def book(message):
-    lesdMessages.bookMessage(message, connection)
+def book(message: types.Message) -> None:
+    lesdMessages.keyboardGenerator(
+        message=message, buttonType='book_', connection=connection, enabled=True)
 
 
 # Cancel
 @lesd.message_handler(commands=['cancel'])
-def cancel(message):
-    lesdMessages.cancelMessage(message, connection)
+def cancel(message: types.Message) -> None:
+    lesdMessages.keyboardGenerator(
+        message=message, buttonType='cancel_', connection=connection, enabled=True)
 
 
 # Next
 @lesd.message_handler(commands=['next'])
-def next(message):
-    lesdMessages.nextMessage(message, connection)
+def next(message: types.Message) -> None:
+    lesdMessages.keyboardGenerator(
+        message=message, buttonType='next_', connection=connection, enabled=True)
 
 
 # Data
 @lesd.message_handler(commands=['data'])
-def dataStored(message):
+def dataStored(message: types.Message) -> None:
     lesdMessages.dataMessage(message)
 
 # Enable event
 
 
 @lesd.message_handler(commands=['enable'])
-def enableEvent(message):
-    lesdMessages.enableMessage(message, connection)
+def enableEvent(message: types.Message) -> None:
+    lesdMessages.keyboardGenerator(
+        message=message, buttonType='enable_', connection=connection, enabled=False)
 
 # Disable event
 
 
 @lesd.message_handler(commands=['disable'])
-def enableEvent(message):
-    lesdMessages.disableMessage(message, connection)
+def enableEvent(message: types.Message) -> None:
+    lesdMessages.keyboardGenerator(
+        message=message, buttonType='disable_', connection=connection, enabled=True)
 
 # Message Not Recogniced
 
 
 @lesd.message_handler(func=lambda message: True, content_types=['text'])
-def undefinedMessage(message):
+def undefinedMessage(message: types.Message) -> None:
     lesdMessages.messageNotRecogniced(message)
 
 
