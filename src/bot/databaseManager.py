@@ -88,18 +88,26 @@ class DatabaseManager:
                 self.cursor.execute(
                     'SELECT COUNT(*) FROM bookings where booth=?', (booth,))
                 (lastNum,) = self.cursor.fetchone()
-                self.cursor.execute(
-                    'INSERT INTO bookings (booth, userId, shift, bookTime) Value (?,?,?, CURRENT_TIME)', (booth, user, lastNum + 1, ))
-                self.connection.commit()
-                self.cursor.execute(
-                    'Select currentShift from booths where booth=?', (booth,))
-                (currentShift,) = self.cursor.fetchone()
-                return (0, lastNum + 1, currentShift)
+                if(lastNum != 0):
+                    self.cursor.execute(
+                        'SELECT userID FROM bookings where booth=? LIMIT 1', (booth,))
+                    # Value from database is a String, userID is an int
+                    (lastUser,) = self.cursor.fetchone()
+                    if(int(lastUser) == user):  # Check if last user is the same one that is booking
+                        return (3, 0, 0)
+                else:
+                    self.cursor.execute(
+                        'INSERT INTO bookings (booth, userId, shift, bookTime) Value (?,?,?, CURRENT_TIME)', (booth, user, lastNum + 1, ))
+                    self.connection.commit()
+                    self.cursor.execute(
+                        'Select currentShift from booths where booth=?', (booth,))
+                    (currentShift,) = self.cursor.fetchone()
+                    return (0, lastNum + 1, currentShift)
             except Error as e:
                 print(f"[DB ERROR]: {e}")
-                return 2
+                return (2, 0, 0)
         else:
-            return 1
+            return (1, 0, 0)
 
     def getBooths(self, enabled: bool = False) -> list:
         """Returns all Booths in the database

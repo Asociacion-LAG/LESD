@@ -92,6 +92,12 @@ def enableEvent(message: types.Message) -> None:
     lesdMessages.keyboardGenerator(
         message=message, buttonType='disable_', connection=connection, enabled=True)
 
+
+@lesd.message_handler(commands=['prueba'])
+def pruebaCommand(message: types.Message) -> None:
+    lesdMessages.prueba(message)
+
+
 # Message Not Recogniced
 
 

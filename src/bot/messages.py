@@ -95,7 +95,10 @@ class Messages:
         u'¿Qué puesto desea desactivar',
 
         'booth_disabled':
-        u'El puesto {booth} ha sido desactivado'
+        u'El puesto {booth} ha sido desactivado',
+
+        'book_already':
+        u'Eres la última persona que ha reservado en {booth}, por favor deja sitio al resto'
     }
 
     def __init__(self, lesd: TeleBot) -> None:
@@ -204,6 +207,9 @@ class Messages:
         if(result == 0):
             self.lesd.send_message(
                 message.chat.id, self.messages['reserva_bien'].format(booth=booth, currentTurn=currentTurn, turnoUser=userTurn))
+        elif (result == 3):
+            self.lesd.send_message(
+                message.chat.id, self.messages['book_already'].format(booth=booth))
         else:
             self.lesd.send_message(
                 message.chat.id, self.messages['reserva_mal'])
